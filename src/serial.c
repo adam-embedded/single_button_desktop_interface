@@ -57,7 +57,7 @@ void serialInit(char* serPort, int baud){
     }
 
 #elif __unix__ || __APPLE__
-    SerialPort = open(serPort, O_RDWR);
+    SerialPort = open(serPort, O_RDWR | O_NOCTTY | O_NONBLOCK);
     if (SerialPort < 0) {
         perror("Error opening serial port");
         exit(EXIT_FAILURE);
@@ -108,8 +108,13 @@ void serialInit(char* serPort, int baud){
         unsigned char byte;
         // Read one byte from the serial port
         if (!ReadFile(serial_port, &byte, 1, &bytes_read, NULL)) {
-            printf("Error reading from serial port\n");
-            return 0; // Return 0 if there's an error
+            if (GetLastError() == ERROR_IO_PENDING) {
+                // Data is not available yet, return 0
+                return 0;
+            } else {
+                printf("Error reading from serial port\n");
+                return 0;
+            }
         }
         return byte;
     }
@@ -125,10 +130,17 @@ void sendByteOverUART(int serial_port, unsigned char byte) {
 // Function to receive a byte over UART
 unsigned char receiveByteOverUART(int serial_port) {
     unsigned char byte;
+    // Set non-blocking mode
+    fcntl(serial_port, F_SETFL, O_NONBLOCK);
     // Read one byte from the serial port
     if (read(serial_port, &byte, 1) != 1) {
-        perror("Error reading from serial port");
-        return 0; // Return 0 if there's an error
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            // Data is not available yet, return 0
+            return 0;
+        } else {
+            perror("Error reading from serial port");
+            return 0;
+        }
     }
     return byte;
 }
