@@ -5,8 +5,6 @@
 #include <ctype.h>
 #include <unistd.h>
 
-
-
 /* Private Includes*/
 #include "main.h"
 #include "serial.h"
@@ -91,9 +89,16 @@ int main(int argc, char** argv) {
         perror("Failed to register signal handler");
         return 1;
     }
+    if (sigaction(SIGTERM, &sa, NULL) == -1) {
+        perror("Failed to register signal handler");
+        return 1;
+    }
 
 
     // Begin Program
+    printf("%s\n", welcomeLogo);
+
+
     printf("Button Interface Started\n");
     printf("Please wait for device detection");
 
@@ -111,6 +116,8 @@ int main(int argc, char** argv) {
 ///////
     //Check for device online and initialise device
     initialiseDevice();
+    // set up function endpoints for button press
+    allocateButtonFunc(sendDataSocket);
 //////
 /*End Device Setup*/
 //////
@@ -119,15 +126,20 @@ int main(int argc, char** argv) {
 /* UDP Setup */
 //////
     char server_ip[] = "127.0.0.1";
-    initialiseSocket(&server_ip[0], PORT);
+    initialiseSocket(server_ip, PORT);
 ///////
 /* End socket setup */
 ///////
 
+    // Start button sampling
+    buttonStart();
+    usleep(150000L);
+
 
     // Loop
     while (!stop) {
-
+        DeviceLoop();
+        usleep(25000L);
     }
 
 
