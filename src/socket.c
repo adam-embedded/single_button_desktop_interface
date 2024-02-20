@@ -58,8 +58,7 @@ int initialiseSocket(char* server_ip, int16_t PORT){
     return 1;
 }
 
-void sendDataSocket(){
-    const char payload = 6; // Single byte payload
+void sendDataSocket(char payload){
     // Send single datagram packet with 1 byte payload
     ssize_t send_len = sendto(client_socket, &payload, sizeof(payload), 0, (struct sockaddr *)&server_addr, sizeof(server_addr));
     if (send_len < 0) {
@@ -70,12 +69,12 @@ void sendDataSocket(){
         exit(EXIT_FAILURE);
     }
 
-    printf("Sent a single datagram packet with a 1 byte payload\n");
+    //printf("Sent a single datagram packet with a 1 byte payload\n");
 
 #ifdef _WIN32
-    Sleep(1000); // Sleep for 1 second
+    //Sleep(1000); // Sleep for 1 second
 #else
-    sleep(1); // Sleep for 1 second
+    //sleep(1); // Sleep for 1 second
 #endif
 }
 

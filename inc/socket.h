@@ -7,6 +7,6 @@
 
 int initialiseSocket(char* server_ip, int16_t PORT);
 void closeSocket();
-void sendDataSocket();
+void sendDataSocket(char payload);
 
 #endif //HEARING_TEST_BUTTON_SOCKET_H
