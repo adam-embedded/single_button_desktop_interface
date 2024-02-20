@@ -8,4 +8,5 @@ include_directories(inc)
 add_executable(hearing_test_button src/main.c
         src/serial.c
         src/device.c
+        src/socket.c
 )
