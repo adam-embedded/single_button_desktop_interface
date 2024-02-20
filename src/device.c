@@ -32,11 +32,39 @@ int8_t buttonCheck();
 /* Static Variables */
 static enum qos Qos;
 static uint8_t samplingRunning = 0;
+static ButtonSendFunc buttonSendFunc;
 
+static int8_t btnPress_count = 0;
 
 /* Device Functions */
 void DeviceLoop(){
+    if (samplingRunning){
+        uint8_t x = serialRead();
+        if (x > 0){
+            message mes = decode(x);
+            char d = 5;
+            if (mes.cmd == BTN_CMD) { // Check that it is a button command message
+                if (mes.msg == BTN_RTN_ON) {
+                    d = 0x01;
+                } else if (mes.msg == BTN_RTN_OFF) {
+                    d = 0x00;
+                } else {
+                    return;
+                }
+                // use allocated function
+                (*buttonSendFunc)(d);
+                if (btnPress_count < 10) {
+                    printf("Button change detected: %s\n", (d ? "true" : "false"));
+                    btnPress_count++;
+                }
+            }
+        }
+    }
 
+}
+
+void allocateButtonFunc(void (*function)(char value)){
+    buttonSendFunc = function;
 }
 
 
@@ -47,7 +75,7 @@ void ReadyStatus(){
     int8_t count = 0;
 
     while (!connected) {
-        printf("Checking for device... Try no. %i", count);
+        printf("Checking for device... Try no. %i\n", count);
 
         uint8_t mes = encode(INFO_CMD, RDY_MSG);
         uint8_t data = sendReceive(mes);
@@ -55,9 +83,10 @@ void ReadyStatus(){
             message x = decode(data);
             if (x.msg == RDY_MSG_RTN && x.cmd == INFO_CMD) {
                 connected = 1;
+                printf("Device Detected!\n");
             }
         }
-        if (count > 3) {
+        if (count >= 3) {
             printf("Failed to detect device 3 times. Please check connections\n");
             exit(1);
         } else {
@@ -74,6 +103,9 @@ void ReadyStatus(){
 
 // Send all setings over to device
 void initialiseDevice(){
+
+    //Device has an issue where it dumps serial data to buffer on reset
+    clearSerial();
 
     // Check Device is online
     ReadyStatus();
@@ -98,16 +130,20 @@ void initialiseDevice(){
 void buttonStart(){
     int8_t x = buttonCheck();
     if (!x){
-        uint8_t set = 0;
-        while(!set) {
+        while(1) {
             message y = compose_message(CTRL_CMD, SMPL_START);
             if (y.msg == SMPL_TRUE) {
-                set = 1;
+                break;
             }
+            usleep(50000L);
         }
         samplingRunning = 1;
+        printf("Button sampling started\n");
+        //fflush(stdout);
+        //allow print to make it to terminal
+
     } else {
-        puts("button already started");
+        puts("button already started\n");
     }
 }
 
@@ -123,16 +159,25 @@ void buttonStop(){
         }
         samplingRunning = 0;
     } else {
-        puts("Button not started");
+        puts("Button not started\n");
     }
 }
 int8_t buttonCheck(){
     uint8_t mes = encode(INFO_CMD, SMPL_STAT);
+    //printf("message sent: %u\n", mes);
     mes = sendReceive(mes);
+    //printf("button check- message received: %i\n",mes);
     if (mes > 0){
         message y = decode(mes);
+        //printf("button check - decoded message: %x\n", y.msg);
+
         int8_t z = 1;
-        if (y.msg == SMPL_STAT_RTN_FALSE) z = 0;
+        if (y.msg == SMPL_STAT_RTN_FALSE) {
+            z = 0;
+            printf("Button Check - Sampling not running\n");
+        }else {
+            printf("Button Check - A signaling issue has occurred");
+        }
         return z;
     } else {
         printf("Button Check: A fatal error has occurred");
@@ -163,7 +208,7 @@ uint8_t encode(uint8_t cmd, uint8_t msg){
 }
 
 message compose_message(uint8_t cmd, uint8_t msg){
-    uint8_t mes = encode(INFO_CMD, SMPL_STAT);
+    uint8_t mes = encode(cmd, msg);
     mes = sendReceive(mes);
     if (mes > 0){
         message y = decode(mes);

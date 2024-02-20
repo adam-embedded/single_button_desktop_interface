@@ -10,6 +10,9 @@ void setQos(int s);
 enum qos getQos();
 void initialiseDevice();
 void DeviceLoop();
+void allocateButtonFunc(void (*function)(char value));
+void buttonStart();
+void buttonStop();
 
 // Define control commands
 #define INFO_CMD 0x01
@@ -54,5 +57,7 @@ enum qos {
     MODE_1,
     MODE_2
 };
+//define device loop functions
+typedef void (*ButtonSendFunc) (char);
 
 #endif //HEARING_TEST_BUTTON_DEVICE_H
