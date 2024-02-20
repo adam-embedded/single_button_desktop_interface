@@ -8,6 +8,8 @@
 void ReadyStatus();
 void setQos(int s);
 enum qos getQos();
+void initialiseDevice();
+void DeviceLoop();
 
 // Define control commands
 #define INFO_CMD 0x01
