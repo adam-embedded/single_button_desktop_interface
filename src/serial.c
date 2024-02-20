@@ -118,6 +118,14 @@ void serialInit(char* serPort, int baud){
         }
         return byte;
     }
+
+    void clearSerialBuffer(HANDLE serial_port) {
+        DWORD bytes_read;
+        char buffer[256]; // Adjust the buffer size as needed
+
+        // Read data from the serial port until there's no more data available
+        while (ReadFile(serial_port, buffer, sizeof(buffer), &bytes_read, NULL) && bytes_read > 0);
+    }
 #elif defined(__unix__) || defined(__APPLE__)
 // Function to send a byte over UART
 void sendByteOverUART(int serial_port, unsigned char byte) {
@@ -139,13 +147,22 @@ unsigned char receiveByteOverUART(int serial_port) {
             return 0;
         } else {
             perror("Error reading from serial port");
-            return 0;
+            exit(1);
         }
     }
     return byte;
 }
+
+void clearSerialBuffer(int serial_port) {
+    char buffer[256]; // Adjust the buffer size as needed
+
+    // Read data from the serial port until there's no more data available
+    while (read(serial_port, buffer, sizeof(buffer)) > 0);
+}
 #endif
 
+
+// Abstractions
 void closeSerial(){
 #ifdef _WIN32
     CloseHandle(serial_port);
@@ -156,7 +173,16 @@ void closeSerial(){
 
 uint8_t sendReceive(uint8_t message){
     sendByteOverUART(SerialPort, message);
-    return receiveByteOverUART(SerialPort);
-
+    uint8_t x = 0;
+    //this is blocking. wait until there is data at the port.
+    while(!x) x = receiveByteOverUART(SerialPort);
+    return x;
 }
 
+uint8_t serialRead(){
+    return receiveByteOverUART(SerialPort);
+}
+
+void clearSerial(){
+    clearSerialBuffer(SerialPort);
+}
