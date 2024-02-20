@@ -10,6 +10,7 @@
 #include "serial.h"
 #include "device.h"
 #include "socket.h"
+#include "ANSI_colors.h"
 
 /* Volatile Variables */
 volatile sig_atomic_t stop = 0;
@@ -95,12 +96,13 @@ int main(int argc, char** argv) {
     }
 
 
+
     // Begin Program
-    printf("%s\n", welcomeLogo);
+    printf(ANSI_COLOR_ORANGE "%s\n" ANSI_COLOR_RESET, welcomeLogo);
 
 
-    printf("Button Interface Started\n");
-    printf("Please wait for device detection");
+    printf(ANSI_COLOR_BLUE "Welcome to the button controller gateway\n" ANSI_COLOR_RESET);
+    printf(ANSI_COLOR_RED "Please wait for device detection...\n" ANSI_COLOR_RESET);
 
 ///////
 /* Serial Setup */
@@ -118,6 +120,7 @@ int main(int argc, char** argv) {
     initialiseDevice();
     // set up function endpoints for button press
     allocateButtonFunc(sendDataSocket);
+
 //////
 /*End Device Setup*/
 //////
@@ -134,6 +137,7 @@ int main(int argc, char** argv) {
     // Start button sampling
     buttonStart();
     usleep(150000L);
+    printf(ANSI_COLOR_MAGENTA"The terminal will display the first 10 button changes:\n\n"ANSI_COLOR_RESET);
 
 
     // Loop

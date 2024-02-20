@@ -18,6 +18,7 @@
 
 /* Private Includes */
 #include "serial.h"
+#include "ANSI_colors.h"
 
 
 
@@ -89,7 +90,7 @@ void serialInit(char* serPort, int baud){
     }
 #endif
 
-    printf("Serial Device Initiated\n");
+    printf(ANSI_COLOR_YELLOW "    - Serial Protocols Initiated\n");
 }
 
 #ifdef _WIN32

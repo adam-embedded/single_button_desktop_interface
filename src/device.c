@@ -17,6 +17,7 @@
 //private includes
 #include "device.h"
 #include "serial.h"
+#include "ANSI_colors.h"
 
 /* Private Function Prototypes */
 message decode(uint8_t encoded);
@@ -54,7 +55,7 @@ void DeviceLoop(){
                 // use allocated function
                 (*buttonSendFunc)(d);
                 if (btnPress_count < 10) {
-                    printf("Button change detected: %s\n", (d ? "true" : "false"));
+                    printf(ANSI_COLOR_CYAN"Button position: %s\n"ANSI_COLOR_RESET, (d ? ANSI_COLOR_GREEN"On" : ANSI_COLOR_RED"Off"));
                     btnPress_count++;
                 }
             }
@@ -75,7 +76,7 @@ void ReadyStatus(){
     int8_t count = 0;
 
     while (!connected) {
-        printf("Checking for device... Try no. %i\n", count);
+        printf("    - Checking for device... Try no. %i\n" ANSI_COLOR_RESET, count);
 
         uint8_t mes = encode(INFO_CMD, RDY_MSG);
         uint8_t data = sendReceive(mes);
@@ -83,11 +84,11 @@ void ReadyStatus(){
             message x = decode(data);
             if (x.msg == RDY_MSG_RTN && x.cmd == INFO_CMD) {
                 connected = 1;
-                printf("Device Detected!\n");
+                printf(ANSI_COLOR_GREEN "Device Detected!\n\n" ANSI_COLOR_RESET);
             }
         }
         if (count >= 3) {
-            printf("Failed to detect device 3 times. Please check connections\n");
+            printf(ANSI_COLOR_RED"Failed to detect device 3 times. Please check connections\n"ANSI_COLOR_RESET);
             exit(1);
         } else {
             count += 1;
@@ -120,7 +121,7 @@ void initialiseDevice(){
     mes = sendReceive(mes);
     if (mes > 0) {
         message y = decode(mes);
-        printf("Quality of service confirmed by device as: MODE_%d\n", y.msg);
+        printf(ANSI_COLOR_YELLOW "Quality of service confirmed by device as: "ANSI_COLOR_RED"MODE_%d\n" ANSI_COLOR_RESET, y.msg);
     } else {
         printf("Device initialisation failed. Application closing");
         exit(1);
@@ -138,8 +139,7 @@ void buttonStart(){
             usleep(50000L);
         }
         samplingRunning = 1;
-        printf("Button sampling started\n");
-        //fflush(stdout);
+        printf(ANSI_COLOR_GREEN"Button sampling started:"ANSI_COLOR_YELLOW "You can now use the device normally\n\n"ANSI_COLOR_RESET);
         //allow print to make it to terminal
 
     } else {
@@ -174,7 +174,7 @@ int8_t buttonCheck(){
         int8_t z = 1;
         if (y.msg == SMPL_STAT_RTN_FALSE) {
             z = 0;
-            printf("Button Check - Sampling not running\n");
+            //printf("Button Check - Sampling not running\n");
         }else {
             printf("Button Check - A signaling issue has occurred");
         }
