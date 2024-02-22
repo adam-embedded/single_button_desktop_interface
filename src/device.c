@@ -5,12 +5,12 @@
 /* Includes */
 #include <stdio.h>
 #include <stdlib.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 #ifdef _WIN32
 #include <windows.h>
 #elif defined(__unix__) || defined(__APPLE__)
-#include <fcntl.h>
-#include <unistd.h>
 #include <errno.h>
 #endif
 
@@ -31,7 +31,7 @@ int8_t buttonCheck();
 
 
 /* Static Variables */
-static enum qos Qos;
+static enum qos Qos = MODE_1;
 static uint8_t samplingRunning = 0;
 static ButtonSendFunc buttonSendFunc;
 
@@ -94,11 +94,8 @@ void ReadyStatus(){
             count += 1;
         }
 
-#ifdef _WIN32
-        sleep(1000);
-#elif __unix__ || __APPLE__
+
         sleep(1);
-#endif
     }
 }
 
