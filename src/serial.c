@@ -120,13 +120,11 @@ void serialInit(char* serPort, int baud){
         return byte;
     }
 
-    void clearSerialBuffer(HANDLE serial_port) {
-        DWORD bytes_read;
-        char buffer[256]; // Adjust the buffer size as needed
-
-        // Read data from the serial port until there's no more data available
-        while (ReadFile(serial_port, buffer, sizeof(buffer), &bytes_read, NULL) && bytes_read > 0);
+void clearSerialBuffer(HANDLE serial_port) {
+    if (!PurgeComm(serial_port, PURGE_RXCLEAR | PURGE_TXCLEAR)) {
+        printf("Error clearing serial buffer\n");
     }
+}
 #elif defined(__unix__) || defined(__APPLE__)
 // Function to send a byte over UART
 void sendByteOverUART(int serial_port, unsigned char byte) {
