@@ -12,26 +12,27 @@
 #include "socket.h"
 #include "ANSI_colors.h"
 
-/* Volatile Variables */
-volatile sig_atomic_t stop = 0;
-
-/* Prototypes */
 #ifdef _WIN32
 #include <windows.h>
 
+/* Volatile Variables */
+volatile BOOL stop = FALSE;
 
 BOOL WINAPI ConsoleCtrlHandler(DWORD ctrlType) {
     switch (ctrlType) {
-    case CTRL_C_EVENT:
-        printf("Ctrl+C (SIGINT) received. Exiting...\n");
-        // Perform cleanup operations if needed
-        return TRUE;
+        case CTRL_C_EVENT:
+            printf("Ctrl+C (SIGINT) received.\n");
+            stop = TRUE;
+            return TRUE;
 
-    default:
-        return FALSE;
-    }
+        default:
+            return FALSE;
+        }
 }
 #elif __unix__ || __APPLE__
+/* Volatile Variables */
+volatile sig_atomic_t stop = 0;
+
 static void handle_sig(int sig)
 {
     printf("Waiting for process to finish... got signal : %d", sig);
@@ -97,10 +98,10 @@ int main(int argc, char** argv) {
     //Handle signal
 #ifdef _WIN32
 // Set console control handler
-    if (!SetConsoleCtrlHandler(ConsoleCtrlHandler, TRUE)) {
-        fprintf(stderr, "Error setting console control handler.\n");
-        return 1;
-    }
+//    if (!SetConsoleCtrlHandler(ConsoleCtrlHandler, TRUE)) {
+//        fprintf(stderr, "Error setting console control handler.\n");
+//        return 1;
+//    }
 
 #elif __unix__ || __APPLE__
     struct sigaction sa;
@@ -166,11 +167,10 @@ int main(int argc, char** argv) {
 
     // Loop
     while (!stop) {
+
         DeviceLoop();
-        usleep(25000L);
+        usleep(50000L);
     }
-
-
 
     printf("* Stopping\n");
 
