@@ -16,12 +16,28 @@
 volatile sig_atomic_t stop = 0;
 
 /* Prototypes */
+#ifdef _WIN32
+#include <windows.h>
+
+
+BOOL WINAPI ConsoleCtrlHandler(DWORD ctrlType) {
+    switch (ctrlType) {
+    case CTRL_C_EVENT:
+        printf("Ctrl+C (SIGINT) received. Exiting...\n");
+        // Perform cleanup operations if needed
+        return TRUE;
+
+    default:
+        return FALSE;
+    }
+}
+#elif __unix__ || __APPLE__
 static void handle_sig(int sig)
 {
     printf("Waiting for process to finish... got signal : %d", sig);
     stop = 1;
 }
-
+#endif
 
 int main(int argc, char** argv) {
     int16_t PORT = 0;
@@ -79,6 +95,14 @@ int main(int argc, char** argv) {
     }
 
     //Handle signal
+#ifdef _WIN32
+// Set console control handler
+    if (!SetConsoleCtrlHandler(ConsoleCtrlHandler, TRUE)) {
+        fprintf(stderr, "Error setting console control handler.\n");
+        return 1;
+    }
+
+#elif __unix__ || __APPLE__
     struct sigaction sa;
     // Listen to ctrl+c and assert
     // Setup the signal handler
@@ -95,7 +119,7 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-
+#endif
 
     // Begin Program
     printf(ANSI_COLOR_ORANGE "%s\n" ANSI_COLOR_RESET, welcomeLogo);

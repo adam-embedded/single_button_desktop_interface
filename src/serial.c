@@ -42,18 +42,18 @@ void serialInit(char* serPort, int baud){
     // Configure the serial port settings
     DCB dcbSerialParams = {0};
     dcbSerialParams.DCBlength = sizeof(dcbSerialParams);
-    if (!GetCommState(serial_port, &dcbSerialParams)) {
+    if (!GetCommState(SerialPort, &dcbSerialParams)) {
         printf("Error getting serial port state\n");
-        CloseHandle(serial_port);
+        CloseHandle(SerialPort);
         exit(1);
     }
     dcbSerialParams.BaudRate = baud;
     dcbSerialParams.ByteSize = 8;
     dcbSerialParams.StopBits = ONESTOPBIT;
     dcbSerialParams.Parity = NOPARITY;
-    if (!SetCommState(serial_port, &dcbSerialParams)) {
+    if (!SetCommState(SerialPort, &dcbSerialParams)) {
         printf("Error setting serial port state\n");
-        CloseHandle(serial_port);
+        CloseHandle(SerialPort);
         exit(1);
     }
 
@@ -166,7 +166,7 @@ void clearSerialBuffer(int serial_port) {
 // Abstractions
 void closeSerial(){
 #ifdef _WIN32
-    CloseHandle(serial_port);
+    CloseHandle(SerialPort);
 #elif defined(__unix__) || defined(__APPLE__)
     close(SerialPort);
 #endif
