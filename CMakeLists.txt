@@ -10,3 +10,9 @@ add_executable(hearing_test_button src/main.c
         src/device.c
         src/socket.c
 )
+
+# Check if building on Windows
+if(WIN32)
+    # Link against the Winsock library
+    target_link_libraries(hearing_test_button PRIVATE ws2_32)
+endif()
