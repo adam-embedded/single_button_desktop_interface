@@ -5,6 +5,8 @@
 #ifndef HEARING_TEST_BUTTON_SERIAL_H
 #define HEARING_TEST_BUTTON_SERIAL_H
 
+#include <stdint.h>
+
 void serialInit(char* port, int baud);
 uint8_t sendReceive(uint8_t message);
 void closeSerial();

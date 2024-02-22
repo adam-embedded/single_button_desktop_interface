@@ -5,6 +5,8 @@
 #ifndef HEARING_TEST_BUTTON_DEVICE_H
 #define HEARING_TEST_BUTTON_DEVICE_H
 
+#include <stdint.h>
+
 void ReadyStatus();
 void setQos(int s);
 enum qos getQos();
