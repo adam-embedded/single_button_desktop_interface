@@ -67,19 +67,13 @@ void sendDataSocket(char payload){
 #endif
         exit(EXIT_FAILURE);
     }
-
-    //printf("Sent a single datagram packet with a 1 byte payload\n");
-
-#ifdef _WIN32
-    //Sleep(1000); // Sleep for 1 second
-#else
-    //sleep(1); // Sleep for 1 second
-#endif
 }
 
 void closeSocket(){
-    close(client_socket);
 #ifdef _WIN32
+    closesocket(client_socket);
     WSACleanup();
+#else
+    close(client_socket);
 #endif
 }
